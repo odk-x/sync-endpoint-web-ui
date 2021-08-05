@@ -1,13 +1,7 @@
-h1 {
-    text-align: center;
-}
-
-
-.content {
+#login-content {
     width: 440px;
 }
 
-
-#odk-logo {
-	margin-top: -18px;
+#login-title {
+	text-align: center;
 }

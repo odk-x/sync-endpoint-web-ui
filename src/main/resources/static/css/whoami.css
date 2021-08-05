@@ -1,0 +1,25 @@
+.section-container {
+    width:400px;
+    margin: 50px;
+}
+
+.row {
+    border-bottom: 1px solid gray;
+    height: 50px;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+}
+
+.row-header {
+    color:gray;
+}
+
+.row-name {
+    width: 120px;
+}
+
+#tables-container {
+    display: flex;
+    flex-direction: row;
+}

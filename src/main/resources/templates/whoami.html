@@ -8,18 +8,53 @@
 <!--/*@thymesVar id="fullName" type="java.lang.String"*/-->
 <!--/*@thymesVar id="officeId" type="java.lang.String"*/-->
 <!--/*@thymesVar id="roleDescriptions" type="java.util.Map<String, String>"*/-->
+	<head>
+		<link rel="stylesheet" th:href="@{/css/whoami.css}">
+	</head>
 
-<th:block layout:fragment="title">Who Am I?</th:block>
+<th:block layout:fragment="title">Sync-Endpoint</th:block>
 <body>
 	<section layout:fragment="content">
-		<p th:text="'Username: ' + ${username}"></p>
-		<p th:text="'Full name: ' + ${fullName}"></p>
-		<p th:if="${officeId != null}" th:text="'Default group: ' + ${officeId}"></p>
-
-		<h2>Groups and Roles</h2>
-		<ul th:each="role: ${roleDescriptions}">
-			<li th:text="${role.key}">Role Name</li>
-		</ul>
+		<div id = "tables-container">
+			<div class="section-container">
+				<div class = "row">
+					<h2 class="row-header">Account details</h2>
+				</div>
+				<div class = "row">
+					<p class="row-name">Username:</p>
+					<b th:text="${username}"></b>
+				</div>
+				<div class = "row">
+					<p class="row-name">Full name:</p>
+					<b th:text="${fullName}"></b>
+				</div>
+				<div class = "row">
+					<th:block th:if="${officeId != null}">
+						<p class="row-name">Default group:</p>
+						<b th:text="${officeId}"></b>
+					</th:block>
+				</div>
+				<th:block th:each="role: ${roleDescriptions}">
+					<div class = "row">
+						<p class="row-name">Group/role:</p>
+						<b th:text="${role.key}"></b>
+					</div>
+				</th:block>
+			</div>
+			<br>
+			<br>
+			<div class="section-container">
+				<div class = "row">
+					<h2 class="row-header">Form tables</h2>
+				</div>
+				<th:block th:each="topTid: ${tableIds}">
+					<div class = "row">
+						<b><a th:text="${topTid}"
+							th:href="@{|/tables/manifest/${topTid}|}"></a></b>
+					</div>
+				</th:block>
+			</div>
+		</div>
 	</section>
 </body>
 </html>

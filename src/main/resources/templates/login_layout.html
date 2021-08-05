@@ -5,6 +5,7 @@
 	layout:decorate="~{root_layout}">
 
 <head>
+	<link rel="stylesheet" th:href="@{/css/menulayout.css}">
 	<link rel="stylesheet" th:href="@{/css/loginlayout.css}">
 	<link rel="stylesheet" th:href="@{/css/menulayout.css}">
 </head>
@@ -18,8 +19,8 @@
 					height="64"></a>
 			</div>
 		</nav>
-		<div class="container content">
-			<h1>
+		<div class="container" id="login-content">
+			<h1 id="login-title">
 				<th:block layout:fragment="title"></th:block>
 			</h1>
 
