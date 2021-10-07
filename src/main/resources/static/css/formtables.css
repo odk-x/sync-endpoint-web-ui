@@ -13,3 +13,9 @@
 .sortColumnDescending::before {
 	content: "\25BC " /* ▼ */
 }
+
+.tablelink {
+	font-size: larger;
+	position:relative;
+	top: 10px;
+}

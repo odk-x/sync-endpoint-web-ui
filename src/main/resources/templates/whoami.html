@@ -41,16 +41,18 @@
 					</div>
 				</th:block>
 			</div>
-			<br>
-			<br>
 			<div class="section-container">
 				<div class = "row">
-					<h2 class="row-header">Form tables</h2>
+					<h2 class="row-header">Form Tables</h2>
 				</div>
-				<th:block th:each="topTid: ${tableIds}">
+				<th:block
+						th:with="authenticated=${roleDescriptions.containsKey('ROLE_SITE_ADMIN') || roleDescriptions.containsKey('ROLE_ADMINISTER_TABLES')}"
+						th:each="topTid: ${tableIds}">
 					<div class = "row">
-						<b><a th:text="${topTid}"
-							th:href="@{|/tables/manifest/${topTid}|}"></a></b>
+						<b>
+							<a th:if="${authenticated}" th:text="${topTid}" th:href="@{|/tables/${topTid}/rows|}"></a>
+							<p th:unless="${authenticated}" th:text="${topTid}" th:value="${authenticated}"></p>
+						</b>
 					</div>
 				</th:block>
 			</div>

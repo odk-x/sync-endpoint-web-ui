@@ -35,7 +35,7 @@
 								<li class="dropdown-header">Existing Form Tables</li>
 								<th:block th:each="topTid: ${tableIds}">
 									<li><a th:text="${topTid}"
-										th:href="@{|/tables/manifest/${topTid}|}"></a></li>
+										th:href="@{|/tables/${topTid}/rows|}"></a></li>
 								</th:block>
 							</ul></li>
 

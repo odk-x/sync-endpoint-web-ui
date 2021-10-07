@@ -1,12 +1,8 @@
-<script>
+<script th:inline="javascript">
 	$('#deleteRowModal')
 			.on(
 					'show.bs.modal',
 					function(event) {
-						var button = $(event.relatedTarget)
-						var rowId = button.data('rowid')
-						var rowETag = button.data('rowetag')
-
 						$('#deleteRowDescription').empty();
 						$('#deleteRowDescription').append(
 								"<table id='confirmDeleteTable'></table>");
@@ -15,28 +11,39 @@
 										"<thead><tr id='confirmDeleteHeader'><th>Row Id</th><th>Create User</th><th>Savepoint Timestamp</th></tr></thead>")
 						$('#confirmDeleteTable')
 								.append(
-										"<tbody><tr id='confirmDeleteBody'></tr></tbody>")
-						$('#confirmDeleteBody').append(
-								"<td>" + rowId + "</td>")
-						$('#confirmDeleteBody').append(
-								"<td>"
-										+ $(
-												"#createUser-"
-														+ rowETag.substring(5))
-												.text() + "</td>")
-						$('#confirmDeleteBody').append(
-								"<td>"
-										+ $(
-												"#savepointTimestamp-"
-														+ rowETag.substring(5))
-												.text() + "</td>")
+										"<tbody id='confirmDeleteBody'></tbody>")
 
-						var modal = $(this)
-						modal.find('input#deleteRowId').val(rowId)
+						tablerow = document.getElementsByClassName('tablerow');
+						for (let i = 0; i < tablerow.length; i++) {
+							var r = tablerow[i]
+							var checkbox = r.getElementsByClassName('rowboxes')[0];
+							if (checkbox.checked) {
+								var rowId = r.getAttribute("data-rowid")
+								var rowETag = r.getAttribute("data-rowetag")
+								var id = "confirmDeleteRow" + i
+								var row = $("<tr></tr>").attr('id', id)
+								row.append(
+									"<td>" + rowId + "</td>")
+									row.append(
+									"<td>"
+											+ $(
+													"#createUser-"
+															+ rowETag.substring(5))
+													.text() + "</td>")
+								row.append(
+									"<td>"
+											+ $(
+													"#savepointTimestamp-"
+															+ rowETag.substring(5))
+													.text() + "</td>")
+								$("#confirmDeleteBody").append(row)
+
+							}
+						}
+
 					})
 
 	$('#deleteButton').on('click', function(event) {
-		var button = $(event.target); // The clicked button
-		$('#deleteRowForm').submit()
+		$('#tableForm').submit();
 	});
 </script>

@@ -4,123 +4,181 @@
 	xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
 	xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
 	layout:decorate="~{odk_tables_layout}">
-<!--/*@thymesVar id="rowResourceList" type="org.opendatakit.aggregate.odktables.rest.entity.RowResourceList"*/-->
+<!--/*@thymesVar id="rowSelectList" type="org.benetech.model.rows.RowSelect"*/-->
 <!--/*@thymesVar id="tableId" type="java.lang.String"*/-->
 <!--/*@thymesVar id="ascending" type="java.lang.Boolean"*/-->
 <!--/*@thymesVar id="sortColumn" type="java.lang.String"*/-->
 
-<th:block layout:fragment="title" th:text="'Rows for ' + ${tableId}"/>
 <head>
 <link rel="stylesheet" th:href="@{/css/modal.css}">
 </head>
+
 <body>
 	<th:block layout:fragment="odktablescontent">
 		<th:block th:include="messaging/dismissable_alert"/>
-
-		<table class="table table-hover"
-			th:if="${rowResourceList.rows != null and not #lists.isEmpty(rowResourceList.rows)}">
-			<thead>
-				<tr>
-					<th>Actions</th>
-					<th
-						th:replace="rows/column_heading::colhead ('_row_id','Row Id', ${sortColumn}, ${ascending})"></th>
-					<th
-						th:replace="rows/column_heading::colhead ('_creator_uri_user','Create User', ${sortColumn}, ${ascending})"></th>
-					<th
-						th:replace="rows/column_heading::colhead ('_last_update_uri_user','Update User', ${sortColumn}, ${ascending})"></th>
-
-
-					<th:block th:each="col: ${rowResourceList.rows[0].values}">
+		<form th:action="@{|/tables/${tableId}/rows/delete|}" th:object = '${rowSelectList}' method="post" id="tableForm">
+			<table class="table table-hover"
+				th:if="${rowSelectList.rows != null and not #lists.isEmpty(rowSelectList.rows)}">
+				<thead>
+					<tr>
+						<th colspan="10">
+								<label for="actions">
+									<b>Actions: </b></label>
+								<select id="actions" name="actions" style="height: 30px; width: 150px;">
+									<option selected value> -- select -- </option>
+								<option value="delete">Delete</option>
+								</select>
+								<input type="button" style="height: 30px;" value = "Go" onclick="goActions()">
+						</th>
+					</tr>
+					<tr>
+						<th><input type="checkbox" id="allboxes" value="all" onClick="toggleBoxes(this)"></th>
+						<th>Details</th>
 						<th
-							th:replace="rows/column_heading::colhead (${col.column},${col.column}, ${sortColumn}, ${ascending})"></th>
-
-					</th:block>
-					<th
-						th:replace="rows/column_heading::colhead ('_locale','Locale', ${sortColumn}, ${ascending})"></th>
-					<th
-						th:replace="rows/column_heading::colhead ('_savepoint_type','Savepoint Type', ${sortColumn}, ${ascending})"></th>
-
-					<th
-						th:replace="rows/column_heading::colhead ('_savepoint_timestamp','Savepoint Timestamp', ${sortColumn}, ${ascending})"></th>
-					<th
-						th:replace="rows/column_heading::colhead ('_savepoint_creator','Savepoint Creator', ${sortColumn}, ${ascending})"></th>
-
-					<th th:replace="rows/column_heading::colhead ('_default_access','Default Access', ${sortColumn}, ${ascending})"></th>
-					<th th:replace="rows/column_heading::colhead ('_group_modify','Group (Modify)', ${sortColumn}, ${ascending})"></th>
-					<th th:replace="rows/column_heading::colhead ('_group_privileged','Group (Privileged)', ${sortColumn}, ${ascending})"></th>
-					<th th:replace="rows/column_heading::colhead ('_group_read_only','Group (Read Only)', ${sortColumn}, ${ascending})"></th>
-					<th th:replace="rows/column_heading::colhead ('_row_owner','Owner', ${sortColumn}, ${ascending})"></th>
-				</tr>
-			</thead>
-			<tfoot>
-				<tr id="tableHeadingRow">
-					<th>Actions</th>
-					<th
-						th:replace="rows/column_heading::colhead ('_row_id','Row Id', ${sortColumn}, ${ascending})"></th>
-					<th
-						th:replace="rows/column_heading::colhead ('_creator_uri_user','Create User', ${sortColumn}, ${ascending})"></th>
-					<th
-						th:replace="rows/column_heading::colhead ('_last_update_uri_user','Update User', ${sortColumn}, ${ascending})"></th>
-
-
-					<th:block th:each="col: ${rowResourceList.rows[0].values}">
+							th:replace="rows/column_heading::colhead ('_row_id','Row Id', ${sortColumn}, ${ascending})"></th>
 						<th
-							th:replace="rows/column_heading::colhead (${col.column},${col.column}, ${sortColumn}, ${ascending})"></th>
+							th:replace="rows/column_heading::colhead ('_creator_uri_user','Create User', ${sortColumn}, ${ascending})"></th>
+						<th
+							th:replace="rows/column_heading::colhead ('_last_update_uri_user','Update User', ${sortColumn}, ${ascending})"></th>
 
-					</th:block>
-					<th
-						th:replace="rows/column_heading::colhead ('_locale','Locale', ${sortColumn}, ${ascending})"></th>
-					<th
-						th:replace="rows/column_heading::colhead ('_savepoint_type','Savepoint Type', ${sortColumn}, ${ascending})"></th>
 
-					<th
-						th:replace="rows/column_heading::colhead ('_savepoint_timestamp','Savepoint Timestamp', ${sortColumn}, ${ascending})"></th>
-					<th
-						th:replace="rows/column_heading::colhead ('_savepoint_creator','Savepoint	Creator', ${sortColumn}, ${ascending})"></th>
+						<th:block th:each="col: ${rowSelectList.rows[0].row.values}">
+							<th
+								th:replace="rows/column_heading::colhead (${col.column},${col.column}, ${sortColumn}, ${ascending})"></th>
 
-					<th th:replace="rows/column_heading::colhead ('_default_access','Default Access', ${sortColumn}, ${ascending})"></th>
-					<th th:replace="rows/column_heading::colhead ('_group_modify','Group (Modify)', ${sortColumn}, ${ascending})"></th>
-					<th th:replace="rows/column_heading::colhead ('_group_privileged','Group (Privileged)', ${sortColumn}, ${ascending})"></th>
-					<th th:replace="rows/column_heading::colhead ('_group_read_only','Group (Read Only)', ${sortColumn}, ${ascending})"></th>
-					<th th:replace="rows/column_heading::colhead ('_row_owner','Owner', ${sortColumn}, ${ascending})"></th>
-				</tr>
-			</tfoot>
-			<tbody>
-				<tr th:each="row: ${rowResourceList.rows}"
-					th:id="'tableRow-' + ${#strings.substring(row.rowETag,5)}">
-					<td><button type="button" class="btn btn-default"
-							data-toggle="modal" data-target="#rowDetailModal"
-							th:attr="data-rowid=${row.rowId},data-rowetag=${row.rowETag}">View
-							Details</button>
-						<button type="button" class="btn btn-danger" data-toggle="modal"
-							data-target="#deleteRowModal"
-							th:attr="data-rowid=${row.rowId},data-rowetag=${row.rowETag}">Delete</button></td>
-					<td th:text="${row.rowId}"></td>
-					<td th:text="${row.createUser}"
-						th:id="'createUser-' + ${#strings.substring(row.rowETag,5)}"></td>
-					<td th:text="${row.lastUpdateUser}"></td>
-					<th:block th:each="col: ${row.values}">
-						<td th:text="${col.value}"></td>
-					</th:block>
-					<td th:text="${row.locale}"></td>
-					<td th:text="${row.savepointType}"></td>
-					<td th:text="${row.savepointTimestamp}"
-						th:id="'savepointTimestamp-' + ${#strings.substring(row.rowETag,5)}"></td>
-					<td th:text="${row.savepointCreator}"></td>
-					<td th:text="${row.rowFilterScope.defaultAccess}"></td>
-					<td th:text="${row.rowFilterScope.groupModify}"></td>
-					<td th:text="${row.rowFilterScope.groupPrivileged}"></td>
-					<td th:text="${row.rowFilterScope.groupReadOnly}"></td>
-					<td th:text="${row.rowFilterScope.rowOwner}"></td>
-				</tr>
-			</tbody>
-		</table>
-		<div th:if="${rowResourceList.rows == null or #lists.isEmpty(rowResourceList.rows)}">
-			There are no files.
-		</div>
+						</th:block>
+						<th
+							th:replace="rows/column_heading::colhead ('_locale','Locale', ${sortColumn}, ${ascending})"></th>
+						<th
+							th:replace="rows/column_heading::colhead ('_savepoint_type','Savepoint Type', ${sortColumn}, ${ascending})"></th>
 
-		<th:block th:include="rows/delete_row_modal"/>
-		<th:block th:include="rows/row_detail_modal"/>
+						<th
+							th:replace="rows/column_heading::colhead ('_savepoint_timestamp','Savepoint Timestamp', ${sortColumn}, ${ascending})"></th>
+						<th
+							th:replace="rows/column_heading::colhead ('_savepoint_creator','Savepoint Creator', ${sortColumn}, ${ascending})"></th>
+
+						<th th:replace="rows/column_heading::colhead ('_default_access','Default Access', ${sortColumn}, ${ascending})"></th>
+						<th th:replace="rows/column_heading::colhead ('_group_modify','Group (Modify)', ${sortColumn}, ${ascending})"></th>
+						<th th:replace="rows/column_heading::colhead ('_group_privileged','Group (Privileged)', ${sortColumn}, ${ascending})"></th>
+						<th th:replace="rows/column_heading::colhead ('_group_read_only','Group (Read Only)', ${sortColumn}, ${ascending})"></th>
+						<th th:replace="rows/column_heading::colhead ('_row_owner','Owner', ${sortColumn}, ${ascending})"></th>
+					</tr>
+				</thead>
+				<tfoot>
+					<tr id="tableHeadingRow">
+						<th></th>
+						<th></th>
+						<th
+							th:replace="rows/column_heading::colhead ('_row_id','Row Id', ${sortColumn}, ${ascending})"></th>
+						<th
+							th:replace="rows/column_heading::colhead ('_creator_uri_user','Create User', ${sortColumn}, ${ascending})"></th>
+						<th
+							th:replace="rows/column_heading::colhead ('_last_update_uri_user','Update User', ${sortColumn}, ${ascending})"></th>
+
+
+						<th:block th:each="col: ${rowSelectList.rows[0].row.values}">
+							<th
+								th:replace="rows/column_heading::colhead (${col.column},${col.column}, ${sortColumn}, ${ascending})"></th>
+
+						</th:block>
+						<th
+							th:replace="rows/column_heading::colhead ('_locale','Locale', ${sortColumn}, ${ascending})"></th>
+						<th
+							th:replace="rows/column_heading::colhead ('_savepoint_type','Savepoint Type', ${sortColumn}, ${ascending})"></th>
+
+						<th
+							th:replace="rows/column_heading::colhead ('_savepoint_timestamp','Savepoint Timestamp', ${sortColumn}, ${ascending})"></th>
+						<th
+							th:replace="rows/column_heading::colhead ('_savepoint_creator','Savepoint	Creator', ${sortColumn}, ${ascending})"></th>
+
+						<th th:replace="rows/column_heading::colhead ('_default_access','Default Access', ${sortColumn}, ${ascending})"></th>
+						<th th:replace="rows/column_heading::colhead ('_group_modify','Group (Modify)', ${sortColumn}, ${ascending})"></th>
+						<th th:replace="rows/column_heading::colhead ('_group_privileged','Group (Privileged)', ${sortColumn}, ${ascending})"></th>
+						<th th:replace="rows/column_heading::colhead ('_group_read_only','Group (Read Only)', ${sortColumn}, ${ascending})"></th>
+						<th th:replace="rows/column_heading::colhead ('_row_owner','Owner', ${sortColumn}, ${ascending})"></th>
+					</tr>
+				</tfoot>
+				<tbody>
+					<tr th:each="rowSelect, stat: ${rowSelectList.rows}" th:with="row = ${rowSelect.row}"
+						th:attr="data-rowid=${row.rowId},data-rowetag=${row.rowETag}" 
+						class = 'tablerow'>
+						
+						<input type="hidden"
+						th:value="${row.rowId}"
+						th:field="*{rows[__${stat.index}__].row.rowId}">
+						<td>
+							<input type="checkbox" 
+							class = "rowboxes"
+							th:value="${row.rowId}"
+							th:checked="${rowSelect.selected}"
+							th:field="*{rows[__${stat.index}__].selected}"
+							onclick="updateAllBox()"/>
+						</td>
+						
+						<td><button type="button" class="btn btn-default"
+								data-toggle="modal" data-target="#rowDetailModal"
+								th:attr="data-rowid=${row.rowId},data-rowetag=${row.rowETag}">View</button></td>
+						<td th:text="${row.rowId}"></td>
+						<td th:text="${row.createUser}"
+							th:id="'createUser-' + ${#strings.substring(row.rowETag,5)}"></td>
+						<td th:text="${row.lastUpdateUser}"></td>
+						<th:block th:each="col: ${row.values}">
+							<td th:text="${col.value}"></td>
+						</th:block>
+						<td th:text="${row.locale}"></td>
+						<td th:text="${row.savepointType}"></td>
+						<td th:text="${row.savepointTimestamp}"
+							th:id="'savepointTimestamp-' + ${#strings.substring(row.rowETag,5)}"></td>
+						<td th:text="${row.savepointCreator}"></td>
+						<td th:text="${row.rowFilterScope.defaultAccess}"></td>
+						<td th:text="${row.rowFilterScope.groupModify}"></td>
+						<td th:text="${row.rowFilterScope.groupPrivileged}"></td>
+						<td th:text="${row.rowFilterScope.groupReadOnly}"></td>
+						<td th:text="${row.rowFilterScope.rowOwner}"></td>
+					</tr>
+					
+				</tbody>
+			
+			</table>
+
+			<div th:if="${rowSelectList.rows == null or #lists.isEmpty(rowSelectList.rows)}">
+				There are no files.
+			</div>
+
+			<th:block th:include="rows/delete_row_modal"/>
+			<th:block th:include="rows/row_detail_modal"/>
+		</form>
+
+		<script language="JavaScript">
+			// script for when go button is clicked, checks if any buttons are checked first
+			function goActions() {
+				for (let checkbox of document.getElementsByClassName('rowboxes')) {
+					if (checkbox.checked) {
+						if ($("#actions option:selected").val() === "delete") {
+							$('#deleteRowModal').modal({show: true});
+							return
+						}
+					}
+				}
+			}
+
+			// these functions are for the checkbox that checks all of them
+			function toggleBoxes(source) {
+			  for (let checkbox of document.getElementsByClassName('rowboxes')) {
+				checkbox.checked = source.checked;
+			  }
+			}
+
+			function updateAllBox() {
+				for (let checkbox of document.getElementsByClassName('rowboxes')) {
+					if (!checkbox.checked) {
+						document.getElementById('allboxes').checked = false;
+						return
+					}
+				}
+				document.getElementById('allboxes').checked = true;
+			}
+		</script>
 
 	</th:block>
 

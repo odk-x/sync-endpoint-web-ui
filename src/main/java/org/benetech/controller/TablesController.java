@@ -10,19 +10,25 @@ import org.apache.commons.logging.LogFactory;
 import org.benetech.client.OdkClient;
 import org.benetech.client.OdkClientFactory;
 import org.benetech.model.display.OdkTablesFileManifestEntryDisplay;
+import org.benetech.model.rows.RowSelect;
+import org.benetech.model.rows.RowSelectList;
 import org.benetech.util.RowUtils;
 import org.opendatakit.aggregate.odktables.rest.entity.OdkTablesFileManifest;
 import org.opendatakit.aggregate.odktables.rest.entity.OdkTablesFileManifestEntry;
 import org.opendatakit.aggregate.odktables.rest.entity.Row;
 import org.opendatakit.aggregate.odktables.rest.entity.RowList;
+import org.opendatakit.aggregate.odktables.rest.entity.RowOutcome;
 import org.opendatakit.aggregate.odktables.rest.entity.RowOutcomeList;
 import org.opendatakit.aggregate.odktables.rest.entity.RowResource;
 import org.opendatakit.aggregate.odktables.rest.entity.RowResourceList;
 import org.opendatakit.aggregate.odktables.rest.entity.TableResource;
+import org.opendatakit.aggregate.odktables.rest.entity.RowOutcome.OutcomeType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -45,6 +51,7 @@ public class TablesController {
 
     model.addAttribute("manifest", manifest);
     model.addAttribute("tableId", tableId);
+    model.addAttribute("currentPage", "manifest");
     return "odk_tables_manifest";
   }
 
@@ -68,36 +75,14 @@ public class TablesController {
 
     model.addAttribute("manifest", mergedManifestDisplay);
     model.addAttribute("tableId", tableId);
+    model.addAttribute("currentPage", "attachments");
     return "odk_tables_attachments";
-  }
-  
-  @PostMapping("/tables/{tableId}/rows/delete")
-  public String deleteRow(@PathVariable("tableId") String tableId,
-      @RequestParam(name = "rowId") String rowId,
-      @RequestParam(name = "sortColumn", defaultValue = "_savepoint_timestamp",
-          required = false) String sortColumn,
-      @RequestParam(name = "ascending", defaultValue = "false", required = false) boolean ascending,
-      Model model) {
-    OdkClient odkClient = odkClientFactory.getOdkClient();
-    TableResource tableResource = odkClient.getTableResource(tableId);
-    RowResource rowResource = odkClient.getSingleRow(tableId, tableResource.getSchemaETag(), rowId);
-    RowList putList = new RowList();
-    Row row =  RowUtils.resourceToRow(rowResource);
-    row.setDeleted(true);
-    putList.getRows().add(row);
-    putList.setDataETag(tableResource.getDataETag());
-    RowOutcomeList rowOutcomeList= odkClient.putRowList(tableId, tableResource.getSchemaETag(), putList);
-
-    populateDefaultModel(tableId, sortColumn, ascending, model);
-    model.addAttribute("msg",
-        "Row " + rowResource.getRowETag() + " has been deleted.");
-    model.addAttribute("css", "info");
-    return "odk_tables_rows";
   }
   
   @GetMapping("/tables/export/{tableId}")
   public String exportForm(@PathVariable("tableId") String tableId, Model model) {
     model.addAttribute("tableId", tableId);
+    model.addAttribute("currentPage", "export");
     return "odk_tables_export";
   }
 
@@ -114,7 +99,43 @@ public class TablesController {
     return "odk_tables_rows";
   }
 
+  @PostMapping("/tables/{tableId}/rows/delete")
+  public String deleteRow(
+      @PathVariable("tableId") String tableId,
+      @ModelAttribute RowSelectList rowSelectList,
+      BindingResult bindingResult,
+      @RequestParam(name = "sortColumn", defaultValue = "_savepoint_timestamp",
+          required = false) String sortColumn,
+      @RequestParam(name = "ascending", defaultValue = "false", required = false) boolean ascending,
+      Model model) {
+    OdkClient odkClient = odkClientFactory.getOdkClient();
+    TableResource tableResource = odkClient.getTableResource(tableId);
+  
+    if (!bindingResult.hasErrors()) {
+      RowList putList = new RowList();
+      for (RowSelect rowSelect : rowSelectList.getRows()) {
+        Row r =  rowSelect.getRow();
+        RowResource rowResource = odkClient.getSingleRow(tableId, tableResource.getSchemaETag(), r.getRowId());
+        Row row =  RowUtils.resourceToRow(rowResource);
+        row.setDeleted(rowSelect.getSelected());
+        putList.getRows().add(row);
+      }
+      putList.setDataETag(tableResource.getDataETag());
+      RowOutcomeList rowOutcomeList= odkClient.putRowList(tableId, tableResource.getSchemaETag(), putList);
+      int rowsNotDeleted = 0;
+      for (RowOutcome outcome : rowOutcomeList.getRows()) {
+        rowsNotDeleted +=  (outcome.getOutcome() != OutcomeType.SUCCESS ? 1 : 0);
+      }
+      model.addAttribute("msg",
+      "Rows deleted. Issues deleting " + rowsNotDeleted + " rows");
+    } else {
+      model.addAttribute("msg", bindingResult.getAllErrors().toString());
+    }
 
+    populateDefaultModel(tableId, sortColumn, ascending, model);
+    model.addAttribute("css", "info");
+    return "odk_tables_rows";
+  }
 
 
 
@@ -125,16 +146,23 @@ public class TablesController {
     TableResource tableResource = odkClient.getTableResource(tableId);
     RowResourceList rowResourceList =
         odkClient.getRowResourceList(tableId, tableResource.getSchemaETag(), sortColumn, ascending);
+    RowSelectList rowSelectList = new RowSelectList();
+    for (RowResource rowResource : rowResourceList.getRows()) {
+      RowSelect rs = new RowSelect();
+      rs.setRow(rowResource);
+      rowSelectList.addRow(rs);
+    }
     model.addAttribute("tableResource", tableResource);
-    model.addAttribute("rowResourceList", rowResourceList);
+    model.addAttribute("rowSelectList", rowSelectList);
     model.addAttribute("tableId", tableId);
     model.addAttribute("ascending", ascending);
     model.addAttribute("sortColumn", sortColumn);
+    model.addAttribute("currentPage", "row");
   }
 
   @GetMapping("/tables/upload")
   public String uploadForm(Model model) {
-//    OdkClient odkClient = odkClientFactory.getOdkClient();
+    OdkClient odkClient = odkClientFactory.getOdkClient();
     return "odk_tables_upload";
   }
 }
