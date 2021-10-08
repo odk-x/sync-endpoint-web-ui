@@ -17,7 +17,7 @@
     <properties>
         <java.version>1.8</java.version>
         <thymeleaf.version>3.0.6.RELEASE</thymeleaf.version>
-        <org.opendatakit-aggregate-rest-interface-version>2017-06-22</org.opendatakit-aggregate-rest-interface-version>
+        <org.opendatakit-odk-rest-interface-version>2.1.8</org.opendatakit-odk-rest-interface-version>
 
         <thymeleaf-layout-dialect.version>2.2.1</thymeleaf-layout-dialect.version>
     </properties>
@@ -49,8 +49,8 @@
         </dependency>
         <dependency>
             <groupId>org.opendatakit</groupId>
-            <artifactId>aggregate-rest-interface</artifactId>
-            <version>${org.opendatakit-aggregate-rest-interface-version}</version>
+            <artifactId>odk-rest-interface</artifactId>
+            <version>${org.opendatakit-odk-rest-interface-version}</version>
             <exclusions>
                 <!-- Spring boot includes jcl-over-slf4j (conflicts) by default -->
                 <exclusion>
