@@ -8,7 +8,7 @@ RUN cd /web-ui/dependencies && \
     mvn package -Dmaven.test.skip=true && \
     mv target/sync-endpoint-web-ui-*.jar /sync-endpoint-web-ui.jar
 
-FROM openjdk:8-jre-slim
+FROM amazoncorretto:8
 
 # Control Java heap and metaspace sizes
 ENV MIN_HEAP 256m
